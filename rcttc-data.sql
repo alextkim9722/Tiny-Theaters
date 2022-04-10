@@ -1,6 +1,10 @@
--- drop database if exists rcttc;
--- create database rcttc;
--- use rcttc;
+use tiny_theaters;
+
+alter table customer AUTO_INCREMENT = 1;
+alter table performance AUTO_INCREMENT = 1;
+alter table play AUTO_INCREMENT = 1;
+alter table theater AUTO_INCREMENT = 1;
+alter table ticket AUTO_INCREMENT = 1;
 
 create table `rcttc_data` (
   `customer_first` text,
@@ -214,3 +218,83 @@ insert into `rcttc_data`
     ('Maggi','Ludlow','mludlow5k@skype.com','457-949-2916','39 Colorado Drive','B5','Hair',14.75,'2021-12-21','Horizon','70 Meadow Valley Parkway, Saint Paul, MN 55103','(651) 555-5555','horizon@rcttc.com'),
     ('Maggi','Ludlow','mludlow5k@skype.com','457-949-2916','39 Colorado Drive','B6','Hair',14.75,'2021-12-21','Horizon','70 Meadow Valley Parkway, Saint Paul, MN 55103','(651) 555-5555','horizon@rcttc.com'),
     ('Flore','Wiltshear','fwiltshearop@flickr.com','','76 Marcy Alley','B7','Hair',14.75,'2021-12-21','Horizon','70 Meadow Valley Parkway, Saint Paul, MN 55103','(651) 555-5555','horizon@rcttc.com');
+
+insert into customer (first_name, last_name, email_address, phone, physical_address)
+select
+	`customer_first`,
+    `customer_last`,
+    `customer_email`,
+    `customer_phone`,
+    `customer_address`
+from `rcttc_data`
+group by
+	`customer_first`,
+    `customer_last`,
+    `customer_email`,
+    `customer_phone`,
+    `customer_address`;
+
+insert into play (title)
+select
+	`show`
+from `rcttc_data`
+group by
+	`show`;
+
+insert into theater (name, address, phone, email)
+select
+	`theater`,
+    `theater_address`,
+    `theater_phone`,
+    `theater_email`
+from `rcttc_data`
+group by
+	`theater`,
+    `theater_address`,
+    `theater_phone`,
+    `theater_email`;
+
+insert into performance (theater_id, play_id, price, play_date)
+select
+	(select theater_id from theater t where a.`theater` = t.name limit 1),
+	(select play_id from play p where a.`show` = p.title limit 1),
+	a.`ticket_price`,
+    a.`date`
+from (
+	select
+		`show`,
+		`theater`,
+		`ticket_price`,
+		`date`
+	from `rcttc_data`
+	group by
+		`show`,
+		`theater`,
+		`ticket_price`,
+		`date`
+    ) a;
+    
+insert into ticket (customer_id, performance_id, seat)
+select
+	(select customer_id from customer c where a.`customer_email` = c.email_address limit 1),
+    (select
+			performance_id
+		from performance per
+		where
+			per.play_id = (select play_id from play p where a.`show` = p.title) and
+			per.theater_id = (select theater_id from theater t where a.`theater` = t.name) and
+			per.price = a.`ticket_price` and
+			per.play_date = a.date
+		limit 1
+    ),
+    a.`seat`
+from (
+	select
+		`customer_email`,
+		`show`,
+		`theater`,
+		`ticket_price`,
+		`date`,
+		`seat`
+	from `rcttc_data`
+    ) a;
