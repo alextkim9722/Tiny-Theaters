@@ -1,5 +1,7 @@
 use tiny_theaters;
 
+SET SQL_SAFE_UPDATES = 0;
+
 alter table customer AUTO_INCREMENT = 1;
 alter table performance AUTO_INCREMENT = 1;
 alter table play AUTO_INCREMENT = 1;
@@ -298,3 +300,95 @@ from (
 		`seat`
 	from `rcttc_data`
     ) a;
+
+select * from performance;
+
+update performance set
+	price = 22.25
+where play_date = '2021-03-01' and play_id = 4;
+
+select * from customer;
+
+update customer set
+	phone = '1-801-EAT-CAKE'
+where customer_id = 48;
+
+select * from ticket;
+
+-- A4
+update ticket set
+	seat = 'B4'
+where customer_id = 37 and seat = 'A4';
+
+-- B4
+update ticket set
+	seat = 'C2'
+where customer_id = 38 and seat = 'B4';
+
+-- C2
+update ticket set
+	seat = 'A4'
+where customer_id = 39 and seat = 'C2';
+
+select
+	t.customer_id,
+    count(t.performance_id)
+from (select* from ticket) t
+group by t.customer_id;
+
+delete from ticket
+where customer_id in (
+select
+	t.customer_id
+from (select* from ticket) t
+inner join performance p on t.performance_id = p.performance_id 
+where p.theater_id = 1 and p.play_date = '2021-03-01' and p.play_id = 1
+group by t.customer_id
+having count(t.performance_id) = 1	
+);
+
+delete from ticket
+where customer_id in (
+select
+	t.customer_id
+from (select* from ticket) t
+inner join performance p on t.performance_id = p.performance_id 
+where p.theater_id = 1 and p.play_date = '2021-09-24' and p.play_id = 1
+group by t.customer_id
+having count(t.performance_id) = 1
+);
+
+delete from ticket
+where customer_id in (
+select
+	t.customer_id
+from (select* from ticket) t
+inner join performance p on t.performance_id = p.performance_id 
+where p.theater_id = 1 and p.play_date = '2021-01-04' and p.play_id = 2
+group by t.customer_id
+having count(t.performance_id) = 1
+);
+
+delete from ticket
+where customer_id in (
+select
+	t.customer_id
+from (select* from ticket) t
+inner join performance p on t.performance_id = p.performance_id 
+where p.theater_id = 1 and p.play_date = '2021-12-21' and p.play_id = 3
+group by t.customer_id
+having count(t.performance_id) = 1
+);
+
+select
+	t.customer_id,
+    c.first_name
+from (select * from ticket) t
+inner join customer c on t.customer_id = c.customer_id
+where c.first_name = 'Liv' and c.last_name = 'Egle of Germany';
+
+delete from ticket
+where customer_id = 65;
+
+delete from customer
+where first_name = 'Liv' and last_name = 'Egle of Germany';
