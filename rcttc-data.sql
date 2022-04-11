@@ -243,6 +243,14 @@ from `rcttc_data`
 group by
 	`show`;
 
+insert into play (title)
+	values
+    ('Ocean'),
+    ('Wen'),
+    ('High School Musical');
+    
+select * from play;
+
 insert into theater (name, address, phone, email)
 select
 	`theater`,
